@@ -1,0 +1,58 @@
+import rclpy
+from rclpy.node import Node
+from geometry_msgs.msg import Twist
+import time
+
+def main():
+    # 初始化ROS2
+    rclpy.init()
+    node = Node("draw_star_node")
+    # 创建速度发布器，向海龟速度话题发指令
+    pub = node.create_publisher(Twist, "/turtle1/cmd_vel", 10)
+    vel = Twist()
+
+    # 循环5次完成五角星绘制
+    for _ in range(5):
+        # 直线前进
+        vel.linear.x = 0.6
+        vel.angular.z = 0.0
+        pub.publish(vel)
+        time.sleep(1.2)
+
+        # 原地右转144度（弧度2.51）
+        vel.linear.x = 0.0
+        vel.angular.z = 2.51
+        pub.publish(vel)
+        time.sleep(1.2)
+
+    # 绘图结束，停止海龟
+    vel.linear.x = 0.0
+    vel.angular.z = 0.0
+    pub.publish(vel)
+
+    node.destroy_node()
+    rclpy.shutdown()
+
+if __name__ == "__main__":
+    main()
+
+
+找到文件里的 entry_points，替换为：
+
+entry_points={
+    'console_scripts': [
+        'draw_star = simple_draw.draw_star:main',
+    ],
+},
+
+终端 1 启动海龟窗口
+
+ros2 run turtlesim turtlesim_node
+
+
+终端 2 编译并运行绘图程序
+
+cd ~/turtle_ws
+colcon build
+source install/setup.bash
+ros2 run simple_draw draw_star
